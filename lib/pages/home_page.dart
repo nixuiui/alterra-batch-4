@@ -1,5 +1,9 @@
 import 'package:alterra_batch_4/chat_room.dart';
+import 'package:alterra_batch_4/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../module.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -114,12 +118,16 @@ class _HomePageState extends State<HomePage> {
       lastChatAt: '17:00'
     ),
   ];
+  
+  Module? selectedModule;
+
+  var show = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Telegram'),
+        title: show ? const Text('Alterra Academy') : const SizedBox(),
         centerTitle: false,
         elevation: 0,
         actions: [
@@ -129,57 +137,99 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: ListView.separated(
-        itemCount: chatRooms.length,
-        separatorBuilder: (context, index) => const Divider(height: 1), 
-        itemBuilder: (context, index) {
-          final room = chatRooms[index];
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    color: Colors.yellow,
-                    width: 40,
-                    height: 40,
-                    child: room.imageUrl != null ? Image.network(
-                      room.imageUrl ?? '',
-                      fit: BoxFit.cover,
-                    ) : Center(child: Text(room.initialName)),
+      body: ListView(
+        children: [
+          if(selectedModule?.title != null) GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              Get.toNamed(
+                AppRoutes.courseDetail,
+                arguments: selectedModule,
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  selectedModule!.type == 'video' ? const Icon(Icons.play_arrow) : const Icon(Icons.book),
+                  const SizedBox(width: 16,),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(selectedModule!.title ?? ''),
+                        Text('${selectedModule!.type} - ${selectedModule!.duration}'),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16,),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        room.roomName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        room.lastChat,
-                        style: const TextStyle(
-                          color: Colors.grey
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedModule = null;
+                      });
+                    }, 
+                    icon: const Icon(Icons.close),
                   ),
-                ),
-                Text(
-                  room.lastChatAt,
-                  style: const TextStyle(
-                    color: Colors.grey
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        }, 
+          ),
+          const Divider(height: 0),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            itemCount: chatRooms.length,
+            separatorBuilder: (context, index) => const Divider(height: 1), 
+            itemBuilder: (context, index) {
+              final room = chatRooms[index];
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: Container(
+                        color: Colors.yellow,
+                        width: 40,
+                        height: 40,
+                        child: room.imageUrl != null ? Image.network(
+                          room.imageUrl ?? '',
+                          fit: BoxFit.cover,
+                        ) : Center(child: Text(room.initialName)),
+                      ),
+                    ),
+                    const SizedBox(width: 16,),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            room.roomName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            room.lastChat,
+                            style: const TextStyle(
+                              color: Colors.grey
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      room.lastChatAt,
+                      style: const TextStyle(
+                        color: Colors.grey
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }, 
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -193,15 +243,34 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: Image.asset(
-                            'assets/messi.jpeg',
-                            fit: BoxFit.cover,
-                          )
+                      GestureDetector(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final result = await Get.toNamed(
+                            AppRoutes.courseList,
+                            arguments: {
+                              'name': 'Niki',
+                              'gender': 'male'
+                            }
+                          );
+
+                          if(result != null) {
+                            final map = result as Map<String, dynamic>;
+                            setState(() {
+                              selectedModule = map['module'] as Module;
+                            });
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: Image.asset(
+                              'assets/messi.jpeg',
+                              fit: BoxFit.cover,
+                            )
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8,),
@@ -223,6 +292,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
+            ),
+            ListTile(
+              onTap: () {
+                Get.toNamed(AppRoutes.webview);
+              },
+              leading: const Icon(Icons.play_arrow),
+              title: const Text('Open Youtube'),
             ),
             const ListTile(
               leading: Icon(Icons.group),
@@ -258,8 +334,14 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xff517da2),
-        onPressed: () {},
-        child: const Icon(Icons.edit),
+        onPressed: () {
+          setState(() {
+            show = !show;
+          });
+        },
+        child: Icon(
+          show ? Icons.visibility_off : Icons.visibility
+        ),
       ),
     );
   }

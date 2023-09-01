@@ -1,7 +1,7 @@
 import 'package:alterra_batch_4/controller/counter_controller.dart';
 import 'package:alterra_batch_4/cubit/counter_cubit.dart';
-import 'package:alterra_batch_4/home_page.dart';
-import 'package:alterra_batch_4/profile_page.dart';
+import 'package:alterra_batch_4/pages/course_list_page.dart';
+import 'package:alterra_batch_4/pages/home_page.dart';
 import 'package:flutter/material.dart';
 
 class MainPage extends StatefulWidget {

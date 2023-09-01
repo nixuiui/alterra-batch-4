@@ -1,5 +1,6 @@
 import 'package:alterra_batch_4/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,7 +11,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Belajar Version Control Git',
       theme: ThemeData(
         primaryColor: const Color(0xff517da2),
